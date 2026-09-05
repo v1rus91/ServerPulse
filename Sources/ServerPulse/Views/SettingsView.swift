@@ -50,7 +50,7 @@ struct SettingsView: View {
                 Text("Дані зберігаються в ~/Library/Application Support/ServerPulse. Паролі не використовуються: лише SSH-ключі з ~/.ssh/config або агента.").font(.caption).foregroundStyle(.tertiary)
             }
         }
-        .formStyle(.grouped).frame(width: 560, height: 640)
+        .formStyle(.grouped).frame(width: 560, height: 880)
     }
 
     private func relaunch() {

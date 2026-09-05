@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/menu-uk.png" width="440" alt="Вікно з рядка меню">
+  <img src="docs/menu-en.png" width="440" alt="Вікно з рядка меню">
 </p>
 
 ## Що вміє
@@ -26,7 +26,8 @@ ServerPulse живе в рядку меню й опитує ваші Linux-се�
 - Українська й англійська мови, запуск при вході, інтервал і пороги в налаштуваннях, фільтр журналу для кожного сервера (за замовчуванням ховає шум `UFW BLOCK`).
 
 <p align="center">
-  <img src="docs/dashboard-uk.png" width="900" alt="Дашборд">
+  <img src="docs/dashboard-en.png" width="900" alt="Дашборд"><br><br>
+  <img src="docs/charts-en.png" width="900" alt="Графіки історії та підсумок за період">
 </p>
 
 ## Встановлення

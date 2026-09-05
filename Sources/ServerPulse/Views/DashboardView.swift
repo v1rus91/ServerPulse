@@ -59,11 +59,14 @@ struct DashboardView: View {
             }
         } detail: {
             if let s = server {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 14) {
-                        ServerCard(server: s)
-                        charts(s)
-                    }.padding(20)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 14) {
+                            ServerCard(server: s)
+                            charts(s).id("charts")
+                        }.padding(20)
+                    }
+                    .onAppear { if CommandLine.arguments.contains("--scroll-charts") { DispatchQueue.main.asyncAfter(deadline: .now() + 3) { withAnimation { proxy.scrollTo("charts", anchor: .top) } } } }
                 }
                 .navigationTitle(s.name)
                 .toolbar {
@@ -109,8 +112,8 @@ struct DashboardView: View {
         return VStack(alignment: .leading, spacing: 12) {
             if raw.count > 1 { stats(raw) }
             chart("CPU, %", pts.map { ($0.t, $0.cpu) }, color: .accentColor, max: 100)
-            chart("Памʼять, %", pts.map { ($0.t, $0.mem) }, color: .purple, max: 100)
-            chart("Load (1 хв)", pts.map { ($0.t, $0.load) }, color: .orange, max: nil)
+            chart(L("Памʼять, %"), pts.map { ($0.t, $0.mem) }, color: .purple, max: 100)
+            chart(L("Load (1 хв)"), pts.map { ($0.t, $0.load) }, color: .orange, max: nil)
             netChart(pts)
         }
     }

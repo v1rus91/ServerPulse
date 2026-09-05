@@ -26,7 +26,8 @@ ServerPulse lives in the menu bar and polls your Linux servers over SSH. No agen
 - Ukrainian and English UI, launch at login, adjustable interval and thresholds, per-server log filter (default hides `UFW BLOCK` noise).
 
 <p align="center">
-  <img src="docs/dashboard-en.png" width="900" alt="Dashboard">
+  <img src="docs/dashboard-en.png" width="900" alt="Dashboard"><br><br>
+  <img src="docs/charts-en.png" width="900" alt="History charts and period summary">
 </p>
 
 ## Install

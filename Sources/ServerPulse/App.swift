@@ -10,9 +10,9 @@ final class AppState {
     private var dashboardWindow: NSWindow?
     func openDashboard() {
         if dashboardWindow == nil {
-            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1100, height: 720), styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
+            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1100, height: 720), styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
             w.contentViewController = NSHostingController(rootView: DashboardView().environment(monitor))
-            w.title = "ServerPulse"; w.titlebarAppearsTransparent = true; w.isReleasedWhenClosed = false; w.center()
+            w.title = "ServerPulse"; w.isReleasedWhenClosed = false; w.center()
             dashboardWindow = w
         }
         NSApp.activate(ignoringOtherApps: true)
