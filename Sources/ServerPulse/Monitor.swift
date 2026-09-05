@@ -98,7 +98,7 @@ final class Monitor {
                 breachCount[key, default: 0] += 1
                 if breachCount[key] == needed { raise(s, kind: kind, message: message()) }
             } else {
-                if (breachCount[key] ?? 0) >= needed { resolve(s, kind: kind) }
+                resolve(s, kind: kind)   // ідемпотентно; працює і після перезапуску застосунку
                 breachCount[key] = 0
             }
         }
@@ -110,6 +110,10 @@ final class Monitor {
         for svc in snap.services { check("service:\(svc.name)", !svc.active, needed: 1, message: L("Сервіс %@ не працює", svc.name)) }
         for c in snap.containers where c.state != "exited" || previous?.containers.first(where: { $0.name == c.name })?.state == "running" {
             check("container:\(c.name)", !c.healthy, needed: 1, message: L("Контейнер %@: %@", c.name, c.status))
+        }
+        // контейнер зник (видалений) — закриваємо його тривогу
+        for a in alerts where a.serverId == s.id && !a.resolved && a.kind.hasPrefix("container:") && !snap.containers.contains(where: { "container:" + $0.name == a.kind }) {
+            resolve(s, kind: a.kind); breachCount["\(s.id):\(a.kind)"] = 0
         }
         if let p = previous, p.reachable, p.containers.count > 0, snap.containers.isEmpty {
             raise(s, kind: "containers-gone", message: L("Усі контейнери зникли (було %d)", p.containers.count))

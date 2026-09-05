@@ -77,7 +77,7 @@ enum SSH {
         }
         guard sections["end"] != nil else { s.reachable = false; s.error = L("Неповна відповідь від сервера"); return s }
         let host = sections["host"] ?? []
-        s.hostname = host.first ?? ""; s.os = host.count > 1 ? host[1] : ""; s.kernel = host.count > 2 ? host[2] : ""
+        let realHost = host.first ?? ""; s.hostname = Prefs.anonymize ? "" : realHost; s.os = host.count > 1 ? host[1] : ""; s.kernel = host.count > 2 ? host[2] : ""
         s.uptime = Double((sections["uptime"]?.first ?? "0").trimmingCharacters(in: .whitespaces)) ?? 0
         if let l = sections["load"]?.first?.split(separator: " "), l.count >= 3 { s.load1 = Double(l[0]) ?? 0; s.load5 = Double(l[1]) ?? 0; s.load15 = Double(l[2]) ?? 0 }
         s.cores = Int((sections["load"] ?? []).dropFirst().first?.trimmingCharacters(in: .whitespaces) ?? "1") ?? 1
@@ -153,7 +153,7 @@ enum SSH {
         s.log = (sections["log"] ?? []).filter { l in !l.isEmpty && !l.hasPrefix("-- ") && !filters.contains { l.contains($0) } }.suffix(15).map { line in
             // прибираємо hostname для компактності
             var l = line
-            if let r = l.range(of: " " + s.hostname + " ") { l.removeSubrange(r.lowerBound..<r.upperBound); l.insert(" ", at: r.lowerBound) }
+            if !realHost.isEmpty, let r = l.range(of: " " + realHost + " ") { l.removeSubrange(r.lowerBound..<r.upperBound); l.insert(" ", at: r.lowerBound) }
             return l
         }
         return s

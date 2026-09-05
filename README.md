@@ -19,7 +19,7 @@ ServerPulse lives in the menu bar and polls your Linux servers over SSH. No agen
 
 - **Menu bar window** with a glass card per server: CPU, memory and load gauges, disk bars, network rates, uptime, pending updates, reboot-required flag, RTT.
 - **Docker and systemd at a glance.** Container chips turn red when a container is exited or unhealthy; systemd services you list are checked with `is-active`. Right-click a chip to restart, stop, start or read the last 60 log lines.
-- **Dashboard window** with Swift Charts history for CPU, memory, load and network (15 min to 24 h), top processes and filtered journal warnings.
+- **Dashboard window** with Swift Charts history for CPU, memory, load and network (15 min to 7 days) with a period summary (average and peak CPU and memory, peak load, total traffic), top processes and filtered journal warnings.
 - **Alerts** with native notifications and an optional sound: server unreachable, CPU/memory above threshold on two consecutive polls, disk above threshold, service down, container unhealthy, all containers gone, unexpected reboot, reboot required.
 - **Quick actions** on every card: open an SSH session in Terminal, open the website, copy the IP, show Docker status, disk & memory, journal errors, available updates, prune the build cache, reboot with confirmation. Add your own per-server quick commands.
 - **Import from `~/.ssh/config`** in one click. Host aliases, ports, users and identity files are picked up as is.
@@ -46,7 +46,7 @@ cd ServerPulse
 .build/release/ServerPulse --probe   # polls every host from ~/.ssh/config and prints a summary
 ```
 
-Useful launch flags: `--dashboard` opens the dashboard immediately, `--settings` opens Settings, `--import` imports hosts from `~/.ssh/config` and exits.
+Useful launch flags: `--dashboard` opens the dashboard immediately, `--settings` opens Settings, `--import` imports hosts from `~/.ssh/config` and exits, `--anonymize` hides real hostnames (used for the screenshots here).
 
 ## How it works
 

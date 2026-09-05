@@ -68,7 +68,7 @@ struct DashboardView: View {
                 .navigationTitle(s.name)
                 .toolbar {
                     ToolbarItemGroup(placement: .primaryAction) {
-                        Picker("Період", selection: $range) { Text("15 хв").tag(15); Text("1 год").tag(60); Text("6 год").tag(360); Text("24 год").tag(1440) }.pickerStyle(.segmented)
+                        Picker("Період", selection: $range) { Text("15 хв").tag(15); Text("1 год").tag(60); Text("6 год").tag(360); Text("24 год").tag(1440); Text("7 д").tag(10080) }.pickerStyle(.segmented)
                         Button { editing = s } label: { Label("Редагувати", systemImage: "pencil") }
                         Button { monitor.poll(s, force: true) } label: { Label("Оновити", systemImage: "arrow.clockwise") }
                     }
@@ -104,13 +104,51 @@ struct DashboardView: View {
 
     private func charts(_ s: Server) -> some View {
         let cutoff = Date().addingTimeInterval(-Double(range) * 60)
-        let pts = (monitor.history[s.id] ?? []).filter { $0.t >= cutoff }
+        let raw = (monitor.history[s.id] ?? []).filter { $0.t >= cutoff }
+        let pts = downsample(raw, to: 360)
         return VStack(alignment: .leading, spacing: 12) {
+            if raw.count > 1 { stats(raw) }
             chart("CPU, %", pts.map { ($0.t, $0.cpu) }, color: .accentColor, max: 100)
             chart("Памʼять, %", pts.map { ($0.t, $0.mem) }, color: .purple, max: 100)
             chart("Load (1 хв)", pts.map { ($0.t, $0.load) }, color: .orange, max: nil)
             netChart(pts)
         }
+    }
+
+    /// Усереднення у кошики, щоб тижневі графіки не мали десятків тисяч точок.
+    private func downsample(_ pts: [Point], to n: Int) -> [Point] {
+        guard pts.count > n * 2 else { return pts }
+        let size = pts.count / n
+        return stride(from: 0, to: pts.count, by: size).map { i in
+            let b = pts[i..<min(i + size, pts.count)]; let c = Double(b.count)
+            return Point(t: b[b.startIndex].t, cpu: b.map(\.cpu).reduce(0, +) / c, mem: b.map(\.mem).reduce(0, +) / c, rx: b.map(\.rx).reduce(0, +) / c, tx: b.map(\.tx).reduce(0, +) / c, load: b.map(\.load).reduce(0, +) / c)
+        }
+    }
+
+    /// Підсумок за період: середнє/максимум CPU і памʼяті, пік load, сумарний трафік.
+    private func stats(_ pts: [Point]) -> some View {
+        let c = Double(pts.count)
+        let cpuAvg = pts.map(\.cpu).reduce(0, +) / c, cpuMax = pts.map(\.cpu).max() ?? 0
+        let memAvg = pts.map(\.mem).reduce(0, +) / c, memMax = pts.map(\.mem).max() ?? 0
+        let loadMax = pts.map(\.load).max() ?? 0
+        var rxTotal = 0.0, txTotal = 0.0
+        for i in 1..<pts.count { let dt = min(600, pts[i].t.timeIntervalSince(pts[i - 1].t)); rxTotal += pts[i].rx * dt; txTotal += pts[i].tx * dt }
+        let span = pts.last!.t.timeIntervalSince(pts.first!.t)
+        return HStack(spacing: 0) {
+            statCell("CPU", String(format: "%.0f%%", cpuAvg), String(format: "max %.0f%%", cpuMax), "cpu")
+            statCell(L("Памʼять"), String(format: "%.0f%%", memAvg), String(format: "max %.0f%%", memMax), "memorychip")
+            statCell("Load", String(format: "%.2f", loadMax), L("пік"), "gauge.with.dots.needle.33percent")
+            statCell(L("Трафік"), "↓ " + Fmt.bytes(rxTotal), "↑ " + Fmt.bytes(txTotal), "network")
+            statCell(L("Період"), Fmt.uptime(span), L("%d точок", pts.count), "clock")
+        }.padding(.vertical, 10).glassCard(12)
+    }
+
+    private func statCell(_ title: String, _ value: String, _ sub: String, _ symbol: String) -> some View {
+        VStack(spacing: 2) {
+            Label(title, systemImage: symbol).font(.caption).foregroundStyle(.secondary)
+            Text(verbatim: value).font(.title3.weight(.semibold)).monospacedDigit()
+            Text(verbatim: sub).font(.caption2).foregroundStyle(.tertiary)
+        }.frame(maxWidth: .infinity)
     }
 
     private func chart(_ title: String, _ data: [(Date, Double)], color: Color, max: Double?) -> some View {
@@ -121,7 +159,7 @@ struct DashboardView: View {
                 LineMark(x: .value("t", p.0), y: .value("v", p.1)).foregroundStyle(color).interpolationMethod(.catmullRom)
             }
             .chartYScale(domain: 0...(max ?? Swift.max(1, (data.map(\.1).max() ?? 1) * 1.2)))
-            .chartXAxis { AxisMarks(values: .automatic(desiredCount: 6)) { _ in AxisGridLine(); AxisValueLabel(format: .dateTime.hour().minute()) } }
+            .chartXAxis { AxisMarks(values: .automatic(desiredCount: 6)) { _ in AxisGridLine(); AxisValueLabel(format: range >= 1440 ? .dateTime.day().month(.abbreviated).hour() : .dateTime.hour().minute()) } }
             .frame(height: 120)
         }.padding(12).glassCard(12)
     }
@@ -137,7 +175,7 @@ struct DashboardView: View {
                 }
             }
             .chartYAxisLabel("KB/s")
-            .chartXAxis { AxisMarks(values: .automatic(desiredCount: 6)) { _ in AxisGridLine(); AxisValueLabel(format: .dateTime.hour().minute()) } }
+            .chartXAxis { AxisMarks(values: .automatic(desiredCount: 6)) { _ in AxisGridLine(); AxisValueLabel(format: range >= 1440 ? .dateTime.day().month(.abbreviated).hour() : .dateTime.hour().minute()) } }
             .frame(height: 120)
         }.padding(12).glassCard(12)
     }

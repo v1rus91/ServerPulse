@@ -185,6 +185,8 @@ enum Fmt {
 // MARK: - Налаштування
 
 enum Prefs {
+    /// --anonymize: ховає реальні hostname (для скріншотів)
+    static let anonymize = CommandLine.arguments.contains("--anonymize")
     static let d = UserDefaults.standard
     static func register() {
         d.register(defaults: ["interval": 30, "cpuWarn": 85, "memWarn": 90, "diskWarn": 90, "notify": true, "sound": true,
