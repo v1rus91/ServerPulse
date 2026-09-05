@@ -1,0 +1,4 @@
+.build/
+dist/
+.venv-icon/
+.DS_Store
